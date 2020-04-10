@@ -1,0 +1,41 @@
+service: nanowritlabs-app-ext-sceneBuider-fillersTable
+
+custom:
+  # Our stage is based on what is passed in when running serverless
+  # commands. Or fallsback to what we have set in the provider section.
+  stage: ${opt:stage, self:provider.stage}
+  # Set the table name here so we can use it while testing locally
+  tableName: ${self:custom.stage}-ext-fillers
+
+provider:
+  name: aws
+  stage: dev
+  region: us-west-2
+
+resources:
+  Resources:
+    FillersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: fillerId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: fillerId
+            KeyType: RANGE
+        # Set the capacity to auto-scale
+        BillingMode: PAY_PER_REQUEST
+
+  Outputs:
+    FillersTableArn:
+      Value:
+        Fn::GetAtt:
+          - FillersTable
+          - Arn
+      Export:
+        Name: ${self:custom.stage}-ExtFillersTableArn

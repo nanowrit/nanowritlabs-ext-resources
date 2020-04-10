@@ -1,0 +1,48 @@
+service: nanowritlabs-app-ext-sceneBuider-uploads
+
+custom:
+  # Our stage is based on what is passed in when running serverless
+  # commands. Or fallsback to what we have set in the provider section.
+  stage: ${opt:stage, self:provider.stage}
+
+provider:
+  name: aws
+  stage: dev
+  region: us-west-2
+
+resources:
+  Resources:
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        # Set the CORS policy
+        CorsConfiguration:
+          CorsRules:
+            -
+              AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              MaxAge: 3000
+
+  # Print out the name of the bucket that is created
+  Outputs:
+    SceneBuilderAttachmentsBucketArn:
+      Value:
+        Fn::GetAtt:
+          - S3Bucket
+          - Arn
+      Export:
+        Name: ${self:custom.stage}-ExtSceneBuilderAttachmentsBucketArn
+        
+    SceneBuilderAttachmentsBucketName:
+      Value:
+        Ref: S3Bucket
+      Export:
+        Name: ${self:custom.stage}-ExtSceneBuilderAttachmentsBucket
