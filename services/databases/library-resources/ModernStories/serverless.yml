@@ -1,0 +1,41 @@
+service: nanowritlabs-app-ext-ModernStories-modernStoriesTable
+
+custom:
+  # Our stage is based on what is passed in when running serverless
+  # commands. Or fallsback to what we have set in the provider section.
+  stage: ${opt:stage, self:provider.stage}
+  # Set the table name here so we can use it while testing locally
+  tableName: ${self:custom.stage}-ext-modernStories
+
+provider:
+  name: aws
+  stage: dev
+  region: us-west-2
+
+resources:
+  Resources:
+    ModernStoriesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: authorId
+            AttributeType: S
+          - AttributeName: storyId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: authorId
+            KeyType: HASH
+          - AttributeName: storyId
+            KeyType: RANGE
+        # Set the capacity to auto-scale
+        BillingMode: PAY_PER_REQUEST
+
+  Outputs:
+    ModernStoriesTableArn:
+      Value:
+        Fn::GetAtt:
+          - ModernStoriesTable
+          - Arn
+      Export:
+        Name: ${self:custom.stage}-ExtModernStoriesTableArn

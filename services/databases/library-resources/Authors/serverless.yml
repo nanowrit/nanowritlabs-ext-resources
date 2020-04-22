@@ -1,0 +1,37 @@
+service: nanowritlabs-app-ext-Authors-authorsTable
+
+custom:
+  # Our stage is based on what is passed in when running serverless
+  # commands. Or fallsback to what we have set in the provider section.
+  stage: ${opt:stage, self:provider.stage}
+  # Set the table name here so we can use it while testing locally
+  tableName: ${self:custom.stage}-ext-authors
+
+provider:
+  name: aws
+  stage: dev
+  region: us-west-2
+
+resources:
+  Resources:
+    AuthorsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: authorId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: authorId
+            KeyType: HASH
+        # Set the capacity to auto-scale
+        BillingMode: PAY_PER_REQUEST
+
+  Outputs:
+    AuthorsTableArn:
+      Value:
+        Fn::GetAtt:
+          - AuthorsTable
+          - Arn
+      Export:
+        Name: ${self:custom.stage}-ExtAuthorsTableArn
